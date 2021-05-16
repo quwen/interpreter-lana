@@ -26,17 +26,21 @@ type Program struct {
 	Statements []Statement
 }
 
-type Boolean struct {
-	Token token.Token
-	Value bool
-}
-
 func (p *Program) TokenLiteral() string {
 	if len(p.Statements) > 0 {
 		return p.Statements[0].TokenLiteral()
 	} else {
 		return ""
 	}
+}
+
+func (p *Program) String() string {
+	var out bytes.Buffer
+
+	for _, s := range p.Statements {
+		out.WriteString(s.String())
+	}
+	return out.String()
 }
 
 type LetStatement struct {
@@ -60,23 +64,6 @@ func (ls *LetStatement) String() string {
 	}
 	out.WriteString(";")
 
-	return out.String()
-}
-
-type Identifier struct {
-	Token token.Token // token.IDENT トークン
-	Value string
-}
-
-func (i *Identifier) expressionNode()      {}
-func (i *Identifier) TokenLiteral() string { return i.Token.Literal }
-
-func (p *Program) String() string {
-	var out bytes.Buffer
-
-	for _, s := range p.Statements {
-		out.WriteString(s.String())
-	}
 	return out.String()
 }
 
@@ -132,7 +119,24 @@ func (bs *BlockStatement) String() string {
 	return out.String()
 }
 
+type Identifier struct {
+	Token token.Token // token.IDENT トークン
+	Value string
+}
+
+func (i *Identifier) expressionNode()      {}
+func (i *Identifier) TokenLiteral() string { return i.Token.Literal }
+
 func (i *Identifier) String() string { return i.Value }
+
+type Boolean struct {
+	Token token.Token
+	Value bool
+}
+
+func (b *Boolean) expressionNode()      {}
+func (b *Boolean) TokenLiteral() string { return b.Token.Literal }
+func (b *Boolean) String() string       { return b.Token.Literal }
 
 type IntegerLiteral struct {
 	Token token.Token
@@ -182,10 +186,6 @@ func (oe *InfixExpression) String() string {
 	return out.String()
 }
 
-func (b *Boolean) expressionNode()      {}
-func (b *Boolean) TokenLiteral() string { return b.Token.Literal }
-func (b *Boolean) String() string       { return b.Token.Literal }
-
 type IfExpression struct {
 	Token       token.Token // 'if 'Token
 	Condition   Expression
@@ -204,7 +204,7 @@ func (ie *IfExpression) String() string {
 	out.WriteString(ie.Consequence.String())
 
 	if ie.Alternative != nil {
-		out.WriteString("else")
+		out.WriteString("else ")
 		out.WriteString(ie.Alternative.String())
 	}
 	return out.String()
